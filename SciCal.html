@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scientific Calculator - Terminal Edition</title>
+    
+    <!-- Montserrat font importer -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        body {
+            background-color: #0d140c;
+            color: #a3c998;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Nav Bar */
+        nav {
+            background-color: #1b2619; 
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #8c6d46; 
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        nav .logo {
+            color: #a3c998; 
+            font-size: 1.2rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 20px;
+        }
+
+        nav ul li a {
+            color: #e2ece9;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        nav ul li a:hover {
+            color: #a3c998;
+            text-decoration: underline;
+        }
+
+        /* Main Container */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 15px;
+            width: 100%;
+            max-width: 820px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #a3c998;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 0 5px rgba(163, 201, 152, 0.3);
+        }
+
+        /* Terminal Card Window */
+        .terminal-card {
+            background-color: #141d13;
+            border: 2px solid #8c6d46;
+            border-radius: 6px;
+            padding: 20px;
+            width: 100%;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+        }
+
+        /* Display Screen Section */
+        .display-screen {
+            background-color: #080c08;
+            border: 1px solid #3b5a32;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: right;
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.7);
+        }
+
+        .screen-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            color: #8c6d46;
+            font-weight: 600;
+        }
+
+        .mode-indicator {
+            background: #1b2619;
+            border: 1px solid #3b5a32;
+            padding: 2px 8px;
+            border-radius: 3px;
+            color: #a3c998;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+
+        .expression-line {
+            color: #728d6b;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            min-height: 1.3em;
+            overflow-x: auto;
+            white-space: nowrap;
+            margin-bottom: 6px;
+        }
+
+        .output-line {
+            color: #e2ece9;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            min-height: 1.2em;
+            overflow-x: auto;
+            white-space: nowrap;
+            word-break: break-all;
+        }
+
+        /* Keypad Layout */
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+        }
+
+        /* Responsive styling for smaller screens */
+        @media (max-width: 600px) {
+            .calculator-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            .btn-scientific {
+                font-size: 0.75rem;
+            }
+        }
+
+        /* Base Button Styles */
+        button {
+            background-color: #1b2619;
+            border: 1px solid #2b4224;
+            color: #e2ece9;
+            padding: 12px 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            user-select: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        button:hover {
+            border-color: #a3c998;
+            color: #a3c998;
+            background-color: #2b4224;
+            box-shadow: 0 0 6px rgba(163, 201, 152, 0.25);
+        }
+
+        button:active {
+            transform: translateY(1px);
+            background-color: #3b5a32;
+        }
+
+        /* Specialized Button Styles */
+        button.btn-num {
+            background-color: #162014;
+            color: #e2ece9;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        button.btn-op {
+            background-color: #231d16;
+            border-color: #5c452a;
+            color: #d1a166;
+        }
+
+        button.btn-op:hover {
+            border-color: #d1a166;
+            color: #f5cf9e;
+            background-color: #3d2f21;
+        }
+
+        button.btn-scientific {
+            background-color: #111a10;
+            color: #9cb894;
+            font-size: 0.85rem;
+        }
+
+        button.btn-clear {
+            background-color: #2d1816;
+            border-color: #632d28;
+            color: #e07a70;
+        }
+
+        button.btn-clear:hover {
+            border-color: #e07a70;
+            color: #ff9d94;
+            background-color: #42221f;
+        }
+
+        button.btn-equals {
+            background-color: #3b5a32;
+            border-color: #8c6d46;
+            color: #ffffff;
+            font-weight: 700;
+            grid-column: span 1;
+        }
+
+        button.btn-equals:hover {
+            background-color: #4a703f;
+            border-color: #a3c998;
+            color: #ffffff;
+            box-shadow: 0 0 8px rgba(163, 201, 152, 0.4);
+        }
+
+        button.btn-mode {
+            background-color: #1e281b;
+            color: #8c6d46;
+            border-color: #4a3a25;
+            font-size: 0.8rem;
+        }
+
+        button.btn-mode.active {
+            color: #a3c998;
+            border-color: #8c6d46;
+            background-color: #2b4224;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #1b2619;
+            color: #a3c998;
+            text-align: center;
+            padding: 18px;
+            border-top: 3px solid #8c6d46;
+            font-size: 0.85rem;
+            margin-top: auto;
+        }
+
+        /* History & Status Box */
+        .status-bar {
+            margin-top: 15px;
+            padding: 10px 12px;
+            background-color: #080c08;
+            border: 1px solid #2b4224;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: #728d6b;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .status-bar span {
+            color: #8c6d46;
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">> Terminal Calculator</div>
+        <ul>
+            <li><a href="#">Home</a></li>
+            <li><a href="#">Tools</a></li>
+            <li><a href="#">About</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <h1>> Scientific Calculator</h1>
+
+        <div class="terminal-card">
+            <!-- Screen Display -->
+            <div class="display-screen">
+                <div class="screen-top">
+                    <span id="deg-rad-indicator" class="mode-indicator">DEG</span>
+                    <span>SYSTEM READY</span>
+                </div>
+                <div id="expression-display" class="expression-line"></div>
+                <div id="output-display" class="output-line">0</div>
+            </div>
+
+            <!-- Calculator Keypad -->
+            <div class="calculator-grid">
+                <!-- Row 1: Mode & Angle Controls -->
+                <button id="btn-deg" class="btn-mode active" onclick="setAngleMode('DEG')">DEG</button>
+                <button id="btn-rad" class="btn-mode" onclick="setAngleMode('RAD')">RAD</button>
+                <button class="btn-scientific" onclick="appendFunc('sin')">sin</button>
+                <button class="btn-scientific" onclick="appendFunc('cos')">cos</button>
+                <button class="btn-scientific" onclick="appendFunc('tan')">tan</button>
+
+                <!-- Row 2: Inverse Trig & Memory/Constants -->
+                <button class="btn-scientific" onclick="appendConstant('π')">π</button>
+                <button class="btn-scientific" onclick="appendConstant('e')">e</button>
+                <button class="btn-scientific" onclick="appendFunc('asin')">asin</button>
+                <button class="btn-scientific" onclick="appendFunc('acos')">acos</button>
+                <button class="btn-scientific" onclick="appendFunc('atan')">atan</button>
+
+                <!-- Row 3: Logarithms & Powers -->
+                <button class="btn-scientific" onclick="appendFunc('log')">log</button>
+                <button class="btn-scientific" onclick="appendFunc('ln')">ln</button>
+                <button class="btn-scientific" onclick="appendOp('^')">x^y</button>
+                <button class="btn-scientific" onclick="appendFunc('sqrt')">√</button>
+                <button class="btn-scientific" onclick="appendFunc('cbrt')">∛</button>
+
+                <!-- Row 4: Power Shortcuts & Operations -->
+                <button class="btn-scientific" onclick="appendPower(2)">x²</button>
+                <button class="btn-scientific" onclick="appendPower(3)">x³</button>
+                <button class="btn-scientific" onclick="appendOp('(')">(</button>
+                <button class="btn-scientific" onclick="appendOp(')')">)</button>
+                <button class="btn-clear" onclick="clearAll()">AC</button>
+
+                <!-- Row 5: Numbers & Editing -->
+                <button class="btn-num" onclick="appendNum('7')">7</button>
+                <button class="btn-num" onclick="appendNum('8')">8</button>
+                <button class="btn-num" onclick="appendNum('9')">9</button>
+                <button class="btn-clear" onclick="backspace()">⌫</button>
+                <button class="btn-op" onclick="appendOp('/')">÷</button>
+
+                <!-- Row 6: Numbers & Multiplication -->
+                <button class="btn-num" onclick="appendNum('4')">4</button>
+                <button class="btn-num" onclick="appendNum('5')">5</button>
+                <button class="btn-num" onclick="appendNum('6')">6</button>
+                <button class="btn-scientific" onclick="appendAns()">Ans</button>
+                <button class="btn-op" onclick="appendOp('*')">×</button>
+
+                <!-- Row 7: Numbers & Subtraction -->
+                <button class="btn-num" onclick="appendNum('1')">1</button>
+                <button class="btn-num" onclick="appendNum('2')">2</button>
+                <button class="btn-num" onclick="appendNum('3')">3</button>
+                <button class="btn-op" onclick="toggleSign()">±</button>
+                <button class="btn-op" onclick="appendOp('-')">−</button>
+
+                <!-- Row 8: Zero, Decimal, Exp, Plus, Equals -->
+                <button class="btn-num" onclick="appendNum('0')">0</button>
+                <button class="btn-num" onclick="appendNum('.')">.</button>
+                <button class="btn-scientific" onclick="appendOp('E')">EXP</button>
+                <button class="btn-equals" onclick="calculate()">=</button>
+                <button class="btn-op" onclick="appendOp('+')">+</button>
+            </div>
+
+            <!-- Terminal Status Bar -->
+            <div class="status-bar">
+                <div>MODE: <span>SCIENTIFIC</span></div>
+                <div>STATUS: <span id="status-text">IDLE</span></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // State variables
+        let currentExpression = '';
+        let lastAnswer = '0';
+        let isDegreeMode = true;
+        let isEvaluated = false;
+
+        // DOM Element references
+        const exprDisplay = document.getElementById('expression-display');
+        const outputDisplay = document.getElementById('output-display');
+        const degBtn = document.getElementById('btn-deg');
+        const radBtn = document.getElementById('btn-rad');
+        const modeIndicator = document.getElementById('deg-rad-indicator');
+        const statusText = document.getElementById('status-text');
+
+        // Toggle Angle Modes (DEG / RAD)
+        function setAngleMode(mode) {
+            if (mode === 'DEG') {
+                isDegreeMode = true;
+                degBtn.classList.add('active');
+                radBtn.classList.remove('active');
+                modeIndicator.textContent = 'DEG';
+            } else {
+                isDegreeMode = false;
+                radBtn.classList.add('active');
+                degBtn.classList.remove('active');
+                modeIndicator.textContent = 'RAD';
+            }
+        }
+
+        // Update Screen UI
+        function updateDisplay() {
+            exprDisplay.textContent = currentExpression;
+            if (currentExpression === '') {
+                outputDisplay.textContent = '0';
+            }
+        }
+
+        // Append Number Digit
+        function appendNum(num) {
+            if (isEvaluated) {
+                currentExpression = '';
+                isEvaluated = false;
+            }
+            currentExpression += num;
+            updateDisplay();
+            setStatus('TYPING');
+        }
+
+        // Append Operator
+        function appendOp(op) {
+            if (isEvaluated) {
+                isEvaluated = false;
+            }
+            currentExpression += op;
+            updateDisplay();
+            setStatus('TYPING');
+        }
+
+        // Append Scientific Function Name
+        function appendFunc(fnName) {
+            if (isEvaluated) {
+                currentExpression = '';
+                isEvaluated = false;
+            }
+            currentExpression += fnName + '(';
+            updateDisplay();
+            setStatus('TYPING');
+        }
+
+        // Append Constant
+        function appendConstant(symbol) {
+            if (isEvaluated) {
+                currentExpression = '';
+                isEvaluated = false;
+            }
+            currentExpression += symbol;
+            updateDisplay();
+            setStatus('TYPING');
+        }
+
+        // Append Power shortcuts (e.g. ^2, ^3)
+        function appendPower(power) {
+            if (isEvaluated) {
+                isEvaluated = false;
+            }
+            currentExpression += '^' + power;
+            updateDisplay();
+            setStatus('TYPING');
+        }
+
+        // Append Previous Result (Ans)
+        function appendAns() {
+            if (isEvaluated) {
+                currentExpression = '';
+                isEvaluated = false;
+            }
+            currentExpression += 'Ans';
+            updateDisplay();
+            setStatus('TYPING');
+        }
+
+        // Toggle Plus/Minus Sign
+        function toggleSign() {
+            if (currentExpression.startsWith('-')) {
+                currentExpression = currentExpression.substring(1);
+            } else {
+                currentExpression = '-' + currentExpression;
+            }
+            updateDisplay();
+        }
+
+        // Backspace - Delete last character
+        function backspace() {
+            if (isEvaluated) {
+                isEvaluated = false;
+            }
+            currentExpression = currentExpression.slice(0, -1);
+            updateDisplay();
+            setStatus('TYPING');
+        }
+
+        // Clear All Screen
+        function clearAll() {
+            currentExpression = '';
+            outputDisplay.textContent = '0';
+            exprDisplay.textContent = '';
+            isEvaluated = false;
+            setStatus('IDLE');
+        }
+
+        // Set status text
+        function setStatus(msg) {
+            statusText.textContent = msg;
+        }
+
+        // Calculation Engine logic
+        function calculate() {
+            if (!currentExpression) return;
+
+            try {
+                let parsedExpr = currentExpression;
+
+                // Replace mathematical constants and answer symbols
+                parsedExpr = parsedExpr.replace(/π/g, 'Math.PI');
+                parsedExpr = parsedExpr.replace(/e/g, 'Math.E');
+                parsedExpr = parsedExpr.replace(/Ans/g, `(${lastAnswer})`);
+
+                // Convert powers x^y -> Math.pow(x, y)
+                // Use a standard regex replacement for powers
+                parsedExpr = parsePowers(parsedExpr);
+
+                // Handle Trigonometric & Scientific Functions
+                parsedExpr = parseTrigFunctions(parsedExpr);
+
+                // Replace Remaining Math Functions
+                parsedExpr = parsedExpr.replace(/log\(/g, 'Math.log10(');
+                parsedExpr = parsedExpr.replace(/ln\(/g, 'Math.log(');
+                parsedExpr = parsedExpr.replace(/sqrt\(/g, 'Math.sqrt(');
+                parsedExpr = parsedExpr.replace(/cbrt\(/g, 'Math.cbrt(');
+
+                // Handle Scientific Notation 'E' -> *10^
+                parsedExpr = parsedExpr.replace(/E/g, '*10^');
+                parsedExpr = parsePowers(parsedExpr);
+
+                // Evaluate Expression Safely
+                // Function execution used to evaluate math input strings
+                const result = new Function(`return ${parsedExpr}`)();
+
+                if (isNaN(result) || !isFinite(result)) {
+                    outputDisplay.textContent = 'Error';
+                    setStatus('ERROR');
+                } else {
+                    // Format output floating points nicely
+                    let formatted = Number(result.toFixed(10)).toString();
+                    outputDisplay.textContent = formatted;
+                    lastAnswer = formatted;
+                    isEvaluated = true;
+                    setStatus('SUCCESS');
+                }
+            } catch (err) {
+                outputDisplay.textContent = 'Syntax Error';
+                setStatus('ERROR');
+            }
+        }
+
+        // Helper: Convert trig functions handling DEG/RAD modes
+        function parseTrigFunctions(expr) {
+            const radMultiplier = isDegreeMode ? '(Math.PI/180)*' : '';
+            const radDivider = isDegreeMode ? '*(180/Math.PI)' : '';
+
+            // Standard Trig
+            expr = expr.replace(/sin\(/g, `Math.sin(${radMultiplier}`);
+            expr = expr.replace(/cos\(/g, `Math.cos(${radMultiplier}`);
+            expr = expr.replace(/tan\(/g, `Math.tan(${radMultiplier}`);
+
+            // Inverse Trig
+            expr = expr.replace(/asin\(/g, `${radDivider}Math.asin(`);
+            expr = expr.replace(/acos\(/g, `${radDivider}Math.acos(`);
+            expr = expr.replace(/atan\(/g, `${radDivider}Math.atan(`);
+
+            return expr;
+        }
+
+        // Helper: Recursive replacement for exponent operator '^'
+        function parsePowers(expr) {
+            while (expr.includes('^')) {
+                expr = expr.replace(/([a-zA-Z0-9_.\)\(]+)\^([a-zA-Z0-9_.\)\(]+)/, 'Math.pow($1,$2)');
+            }
+            return expr;
+        }
+
+        window.addEventListener('keydown', (e) => {
+            const key = e.key;
+
+            if (!isNaN(key) && key !== ' ') {
+                appendNum(key);
+            } else if (key === '.') {
+                appendNum('.');
+            } else if (['+', '-', '*', '/'].includes(key)) {
+                appendOp(key);
+            } else if (key === '(' || key === ')') {
+                appendOp(key);
+            } else if (key === '^') {
+                appendOp('^');
+            } else if (key === 'Enter' || key === '=') {
+                e.preventDefault();
+                calculate();
+            } else if (key === 'Backspace') {
+                backspace();
+            } else if (key === 'Escape') {
+                clearAll();
+            }
+        });
+    </script>
+
+    <footer>
+        <p>&copy; 2026 Student Information System | 2-CS3 | Kian Charli P. Sogoni</p>
+    </footer>
+
+</body>
+</html>
